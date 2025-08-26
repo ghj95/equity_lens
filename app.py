@@ -102,7 +102,7 @@ def extract_source_quotes(llm, sources, processed_docs, query, answer):
                     - The quote must be DIRECTLY related to this specific answer: "{answer[:400]}"
                     - The quote must help answer this question: "{query}"
                     - Extract the quote word-for-word from the article text
-                    - Maximum 100 characters
+                    - Maximum 300 characters
                     - Return ONLY the quote text with NO quotation marks, NO explanations, NO additional text
                     - If no quote directly relates to the answer, return exactly: "No relevant quote"
                     
@@ -116,8 +116,8 @@ def extract_source_quotes(llm, sources, processed_docs, query, answer):
                     # edge cases
                     if not quote or quote.lower() in ["no relevant quote", "no quote found", "none"]:
                         quote = "N/A"
-                    elif len(quote) > 100:
-                        quote = quote[:97] + "..."
+                    elif len(quote) > 300:
+                        quote = quote[:297] + "..."
                     
                     source_quotes[source] = quote
             else:
