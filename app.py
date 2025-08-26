@@ -10,9 +10,7 @@ from langchain.schema import Document
 from newspaper import Article
 import re
 
-load_dotenv()
-
-# Load environment variables
+# load env
 load_dotenv()
 
 @st.cache_resource
