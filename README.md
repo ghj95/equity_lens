@@ -44,7 +44,7 @@ EquityLens is an end-to-end LLM-powered news research tool that helps equity res
    Create a `.env` file in the project root:
    ```env
    OPENAI_API_KEY=your-openai-api-key-here
-   OPENAI_MODEL=gpt-3.5-turbo
+   OPENAI_MODEL=gpt-4o-mini
    OPENAI_TEMPERATURE=0.3
    OPENAI_MAX_TOKENS=1500
    OPENAI_EMBEDDING_MODEL=text-embedding-3-small
@@ -76,7 +76,7 @@ EquityLens is an end-to-end LLM-powered news research tool that helps equity res
 3. Add your secrets in the Streamlit dashboard:
    ```toml
    OPENAI_API_KEY = "your-api-key-here"
-   OPENAI_MODEL = "gpt-3.5-turbo"
+   OPENAI_MODEL = "gpt-4o-mini"
    OPENAI_TEMPERATURE = 0.3
    OPENAI_MAX_TOKENS = 1500
    OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
@@ -124,18 +124,6 @@ equitylens/
 - Multi-language article support
 - Advanced financial metrics extraction
 - Integration with financial data APIs
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
