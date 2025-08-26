@@ -57,33 +57,54 @@ def init_resources():
 
     return llm, embeddings, vectorstore, qa_chain
 
-def extract_key_quotes(llm, docs, query):
+def extract_source_quotes(llm, sources, processed_docs, query, answer):
+    """Extract key quote from each source that supports the answer"""
+    source_quotes = {}
+    
     try:
-        all_content = "\n\n".join([doc.page_content for doc in docs])
+        source_to_content = {}
+        for doc in processed_docs:
+            source_url = doc.metadata.get("source", "")
+            if source_url:
+                source_to_content[source_url] = doc.page_content
         
-        quote_prompt = f"""
-        From the following financial news articles, the most impactful and relevant single quote that relate to: "{query}"
-
-        Focus on a single quote that:
-        - Contain specific market insights, predictions, or analysis
-        - Include concrete numbers, percentages, or financial data
-        - Come from credible sources (analysts, executives, experts)
-        - Are directly relevant to the question asked
-
-        For the quote, provide:
-        The exact quote in quotation marks
-        
-        Format your response as:
-        **Quote:** "exact quote here"
-        
-        Articles:
-        {all_content[:4000]}
-        """
-        
-        response = llm.invoke(quote_prompt)
-        return response.content
-    except Exception as e:
-        return f"Unable to extract quotes: {str(e)}"
+        for source in sources:
+            if source in source_to_content:
+                content = source_to_content[source]
+                
+                # Check if the answer indicates uncertainty
+                uncertainty_indicators = ["i don't know", "i'm not sure", "unclear", "cannot determine", "no information", "not mentioned"]
+                answer_lower = answer.lower()
+                is_uncertain = any(indicator in answer_lower for indicator in uncertainty_indicators)
+                
+                if is_uncertain:
+                    source_quotes[source] = "N/A"
+                else:
+                    quote_prompt = f"""
+                    CRITICAL INSTRUCTIONS:
+                    - You must extract EXACTLY ONE quote from the article below
+                    - The quote must be DIRECTLY related to this specific answer: "{answer[:400]}"
+                    - The quote must help answer this question: "{query}"
+                    - Extract the quote word-for-word from the article text
+                    - Maximum 60 characters
+                    - Return ONLY the quote text with NO quotation marks, NO explanations, NO additional text
+                    - If no quote directly relates to the answer, return exactly: "No relevant quote"
+                    
+                    Article content:
+                    {content[:2000]}
+                    
+                    Quote:"""
+                    
+                    response = llm.invoke(quote_prompt)
+                    quote = response.content.strip().replace('"', '').replace("'", "").replace("Quote:", "").strip()
+                    
+                    # Handle edge cases
+                    if not quote or quote.lower() in ["no relevant quote", "no quote found", "none"]:
+                        quote = "N/A"
+                    elif len(quote) > 60:
+                        quote = quote[:57] + "..."
+                    
+                    source_quotes[source] = quote
 
 llm, embeddings, vectorstore, qa_chain = init_resources()
 
@@ -201,7 +222,7 @@ if os.path.exists(index_faiss) and os.path.exists(index_pkl):
             st.markdown("### 📝 Answer")
             st.write(result["answer"])
             
-            # Extract and display key quotes if we have processed documents
+            # display quotes
             if st.session_state.processed_docs:
                 with st.spinner("Extracting key quotes..."):
                     key_quotes = extract_key_quotes(llm, st.session_state.processed_docs, query)
