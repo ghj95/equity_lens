@@ -26,35 +26,6 @@ EquityLens is an end-to-end LLM-powered news research tool that helps equity res
 - **Embeddings**: OpenAI text-embedding-3-small
 - **Article Processing**: newspaper3k
 
-## Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/equitylens.git
-   cd equitylens
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Set up environment variables**
-   
-   Create a `.env` file in the project root:
-   ```env
-   OPENAI_API_KEY=your-openai-api-key-here
-   OPENAI_MODEL=gpt-4o-mini
-   OPENAI_TEMPERATURE=0.3
-   OPENAI_MAX_TOKENS=1500
-   OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-   ```
-
-4. **Run the application**
-   ```bash
-   streamlit run app.py
-   ```
-
 ## Usage
 
 1. **Add Article URLs**: Enter up to 3 financial news article URLs in the sidebar
@@ -66,35 +37,6 @@ EquityLens is an end-to-end LLM-powered news research tool that helps equity res
 - "What are the main factors affecting stock performance?"
 - "What do analysts predict for Q4 earnings?"
 - "What risks are mentioned in these articles?"
-
-## Deployment
-
-### Streamlit Cloud
-
-1. Push your code to GitHub (API keys are automatically excluded via `.gitignore`)
-2. Connect your repository to [Streamlit Cloud](https://share.streamlit.io)
-3. Add your secrets in the Streamlit dashboard:
-   ```toml
-   OPENAI_API_KEY = "your-api-key-here"
-   OPENAI_MODEL = "gpt-4o-mini"
-   OPENAI_TEMPERATURE = 0.3
-   OPENAI_MAX_TOKENS = 1500
-   OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
-   ```
-
-## Project Structure
-
-```
-equitylens/
-├── app.py                 # Main Streamlit application
-├── requirements.txt       # Python dependencies
-├── .env                  # Environment variables (local only)
-├── .gitignore           # Git ignore rules
-├── README.md            # Project documentation
-└── faiss_index/         # Vector database (auto-generated)
-    ├── index.faiss
-    └── index.pkl
-```
 
 ## Technical Implementation
 
@@ -124,9 +66,3 @@ equitylens/
 - Multi-language article support
 - Advanced financial metrics extraction
 - Integration with financial data APIs
-
-## Contact
-
-**Gabriel Hardy-Joseph** - [Portfolio](https://ghj95.github.io/portfolio/)
-
-Project Link: [https://github.com/yourusername/equitylens](https://github.com/yourusername/equitylens)

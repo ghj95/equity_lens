@@ -1,13 +1,9 @@
-# Environment variables
+# .env
 .env
 .env.local
 .env.production
 
-# API Keys
-**/secrets/
-config/keys.py
-
-# Streamlit secrets
+# streamlit secrets
 .streamlit/secrets.toml
 
 # Python
@@ -20,17 +16,17 @@ env/
 venv/
 .venv/
 
-# Database
+# db
 faiss_index/
 *.faiss
 *.pkl
 
-# IDE
+# ide
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# os
 .DS_Store
 Thumbs.db

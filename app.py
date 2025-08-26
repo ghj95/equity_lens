@@ -58,7 +58,6 @@ def init_resources():
     return llm, embeddings, vectorstore, qa_chain
 
 def extract_source_quotes(llm, sources, processed_docs, query, answer):
-    """Extract key quote from each source that supports the answer"""
     source_quotes = {}
     
     try:
@@ -72,7 +71,7 @@ def extract_source_quotes(llm, sources, processed_docs, query, answer):
             if source in source_to_content:
                 content = source_to_content[source]
                 
-                # Check if the answer indicates uncertainty
+                # check if uncertain
                 uncertainty_indicators = ["i don't know", "i'm not sure", "unclear", "cannot determine", "no information", "not mentioned"]
                 answer_lower = answer.lower()
                 is_uncertain = any(indicator in answer_lower for indicator in uncertainty_indicators)
@@ -86,25 +85,33 @@ def extract_source_quotes(llm, sources, processed_docs, query, answer):
                     - The quote must be DIRECTLY related to this specific answer: "{answer[:400]}"
                     - The quote must help answer this question: "{query}"
                     - Extract the quote word-for-word from the article text
-                    - Maximum 60 characters
+                    - Maximum 100 characters
                     - Return ONLY the quote text with NO quotation marks, NO explanations, NO additional text
                     - If no quote directly relates to the answer, return exactly: "No relevant quote"
                     
                     Article content:
                     {content[:2000]}
-                    
-                    Quote:"""
+                    """
                     
                     response = llm.invoke(quote_prompt)
                     quote = response.content.strip().replace('"', '').replace("'", "").replace("Quote:", "").strip()
                     
-                    # Handle edge cases
+                    # edge cases
                     if not quote or quote.lower() in ["no relevant quote", "no quote found", "none"]:
                         quote = "N/A"
-                    elif len(quote) > 60:
-                        quote = quote[:57] + "..."
+                    elif len(quote) > 100:
+                        quote = quote[:97] + "..."
                     
                     source_quotes[source] = quote
+            else:
+                source_quotes[source] = "N/A"
+    
+    except Exception as e:
+        # quote is N/A is to answer
+        for source in sources:
+            source_quotes[source] = "N/A"
+    
+    return source_quotes
 
 llm, embeddings, vectorstore, qa_chain = init_resources()
 
@@ -135,7 +142,7 @@ appinfo()
 st.markdown("---")
 
 # sidebar
-st.sidebar.header("Articles \n (paste URLs below)")
+st.sidebar.header("News Articles \n (paste URLs below)")
 url1 = st.sidebar.text_input("Source 1")
 url2 = st.sidebar.text_input("Source 2")
 url3 = st.sidebar.text_input("Source 3")
@@ -150,9 +157,17 @@ def fetch_article_document(url: str) -> Document:
         return None
     return Document(page_content=content, metadata={"source": url})
 
-# Store processed documents in session state
+# store docs
 if 'processed_docs' not in st.session_state:
     st.session_state.processed_docs = []
+
+# store url
+if 'url_mapping' not in st.session_state:
+    st.session_state.url_mapping = {}
+
+# store processing status
+if 'articles_processed' not in st.session_state:
+    st.session_state.articles_processed = False
 
 # process urls
 if st.sidebar.button("Process"):
@@ -165,18 +180,24 @@ if st.sidebar.button("Process"):
         try:
             with st.spinner("Fetching article texts..."):
                 docs = []
-                for u in urls:
-                    doc = fetch_article_document(u)
-                    if doc:
-                        docs.append(doc)
-                    else:
-                        st.warning(f"No content found for URL: {u}")
+                url_mapping = {}
+                # map urls to position
+                input_urls = [url1, url2, url3]
+                for i, u in enumerate(input_urls):
+                    if u:  
+                        doc = fetch_article_document(u)
+                        if doc:
+                            docs.append(doc)
+                            url_mapping[u] = f"Source {i + 1}"
+                        else:
+                            st.warning(f"No content found for URL: {u}")
 
             if not docs:
                 st.error("No valid article content found. Please check your URLs.")
             else:
-                # Store original documents for quote extraction
+                # store docs for quote extraction
                 st.session_state.processed_docs = docs
+                st.session_state.url_mapping = url_mapping
                 
                 with st.spinner("Splitting documents into chunks..."):
                     text_splitter = RecursiveCharacterTextSplitter(
@@ -190,18 +211,22 @@ if st.sidebar.button("Process"):
                     vector = FAISS.from_documents(split_docs, embeddings)
                     vector.save_local(path)
 
-                st.success("Articles processed and indexed!")
+                st.session_state.articles_processed = True
                 st.rerun()
 
         except Exception as e:
-            st.error(f"Error processing URLs: {str(e)}")
+            st.error("Error processing URLs: The content may be blocked by a paywall. Please try using freely accessible sites instead.")
+
+# show status
+if st.session_state.articles_processed:
+    st.success("Articles processed and indexed! Ready for questions.")
 
 # ask questions
 vector_path = "faiss_index"
 index_faiss = os.path.join(vector_path, "index.faiss")
 index_pkl = os.path.join(vector_path, "index.pkl")
 
-if os.path.exists(index_faiss) and os.path.exists(index_pkl):
+if st.session_state.articles_processed and os.path.exists(index_faiss) and os.path.exists(index_pkl):
     st.markdown("### 💬 Ask Questions About Your Articles")
     
     query = st.text_input("Enter your question about the processed articles:")
@@ -219,30 +244,32 @@ if os.path.exists(index_faiss) and os.path.exists(index_pkl):
                 )
                 result = chain({"question": query}, return_only_outputs=True)
             
-            st.markdown("### 📝 Answer")
-            st.write(result["answer"])
-            
-            # display quotes
-            if st.session_state.processed_docs:
-                with st.spinner("Extracting key quotes..."):
-                    key_quotes = extract_key_quotes(llm, st.session_state.processed_docs, query)
-                
-                if key_quotes and "Unable to extract" not in key_quotes:
-                    with st.container(border=True):
-                        st.markdown(key_quotes)
-            
             if "sources" in result and result["sources"]:
-                
                 sources = result["sources"]
                 
                 if isinstance(sources, str):
                     sources = [s.strip() for s in sources.replace("\n", ",").split(",") if s.strip()]
 
-                for i, src in enumerate(sources, start=1):
-                    st.markdown(
-                        f'<a href="{src}" target="_blank" style="display:inline-block; background-color:#F0F2F6; color:black; padding:5px 10px; margin:2px; border-radius:5px; text-decoration:none;">Source {i}</a>',
-                        unsafe_allow_html=True
-                    )
+                # extract key quotes
+                if st.session_state.processed_docs:
+                    with st.spinner("Extracting source quotes..."):
+                        source_quotes = extract_source_quotes(llm, sources, st.session_state.processed_docs, query, result["answer"])
+                        
+                        # display main answer
+                        st.markdown("### 🎯 Answer")
+                        st.write(result['answer'])
+                        # display source
+                        for src in sources:
+                            quote = source_quotes.get(src, "N/A")
+                            if quote != "N/A":
+                                # get correct source number
+                                source_label = st.session_state.url_mapping.get(src, "Unknown Source")
+                                with st.container(border=True):
+                                    st.markdown(f"**Quote:** \"{quote}\"")
+                                st.markdown(
+                                    f'<a href="{src}" target="_blank" style="display:inline-block; background-color:#F0F2F6; color:black; padding:8px 12px; margin-top:8px; border-radius:5px; text-decoration:none;">{source_label}</a>',
+                                    unsafe_allow_html=True
+                                )
 
         except Exception as e:
             st.error(f"Error processing your question: {str(e)}")
