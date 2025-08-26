@@ -1,0 +1,144 @@
+# EquityLens
+
+**AI-powered news analysis for smarter equity research**
+
+EquityLens is an end-to-end LLM-powered news research tool that helps equity research analysts efficiently analyze financial news by retrieving, summarizing, and highlighting key market insights. Built with LangChain and OpenAI API, it demonstrates how large language models can streamline research workflows and transform unstructured news into actionable intelligence.
+
+## Features
+
+- **Multi-Article Analysis**: Process up to 3 financial news articles simultaneously
+- **Intelligent Q&A**: Ask questions about processed articles using natural language
+- **Key Quote Extraction**: Automatically identifies and displays impactful quotes from articles
+- **Trend Indicators**: Visual sentiment indicators (Positive, Negative, Neutral)
+- **Source Attribution**: Direct links to original articles with contextual quotes
+- **Vector Search**: FAISS-powered semantic search for accurate information retrieval
+
+## Live Demo
+
+[Try EquityLens on Streamlit Cloud](your-streamlit-url-here)
+
+## Tech Stack
+
+- **Frontend**: Streamlit
+- **LLM**: OpenAI GPT (configurable model)
+- **Framework**: LangChain
+- **Vector Store**: FAISS
+- **Embeddings**: OpenAI text-embedding-3-small
+- **Article Processing**: newspaper3k
+
+## Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/equitylens.git
+   cd equitylens
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up environment variables**
+   
+   Create a `.env` file in the project root:
+   ```env
+   OPENAI_API_KEY=your-openai-api-key-here
+   OPENAI_MODEL=gpt-3.5-turbo
+   OPENAI_TEMPERATURE=0.3
+   OPENAI_MAX_TOKENS=1500
+   OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+   ```
+
+4. **Run the application**
+   ```bash
+   streamlit run app.py
+   ```
+
+## Usage
+
+1. **Add Article URLs**: Enter up to 3 financial news article URLs in the sidebar
+2. **Process Articles**: Click "Process" to analyze and index the articles
+3. **Ask Questions**: Use natural language to query the processed content
+4. **Review Results**: Get answers with trend indicators, key quotes, and source links
+
+### Example Queries
+- "What are the main factors affecting stock performance?"
+- "What do analysts predict for Q4 earnings?"
+- "What risks are mentioned in these articles?"
+
+## Deployment
+
+### Streamlit Cloud
+
+1. Push your code to GitHub (API keys are automatically excluded via `.gitignore`)
+2. Connect your repository to [Streamlit Cloud](https://share.streamlit.io)
+3. Add your secrets in the Streamlit dashboard:
+   ```toml
+   OPENAI_API_KEY = "your-api-key-here"
+   OPENAI_MODEL = "gpt-3.5-turbo"
+   OPENAI_TEMPERATURE = 0.3
+   OPENAI_MAX_TOKENS = 1500
+   OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
+   ```
+
+## Project Structure
+
+```
+equitylens/
+├── app.py                 # Main Streamlit application
+├── requirements.txt       # Python dependencies
+├── .env                  # Environment variables (local only)
+├── .gitignore           # Git ignore rules
+├── README.md            # Project documentation
+└── faiss_index/         # Vector database (auto-generated)
+    ├── index.faiss
+    └── index.pkl
+```
+
+## Technical Implementation
+
+### Architecture
+- **RAG Framework**: Retrieval-Augmented Generation for accurate, source-backed answers
+- **Document Processing**: Recursive text splitting with optimal chunk sizes (500 chars, 50 overlap)
+- **Vector Store**: FAISS indexing with OpenAI embeddings for semantic search
+- **LLM Integration**: Configurable OpenAI models with RetrievalQAWithSourcesChain
+
+### Key Components
+- **Multi-document Analysis**: Processes and synthesizes insights from multiple articles
+- **Source Attribution**: Maintains traceability from answers back to original sources
+- **Real-time Processing**: Dynamic quote extraction and sentiment analysis
+- **Error Handling**: Robust handling for failed URL fetches and API calls
+
+## Performance Considerations
+
+- **Caching**: Streamlit resource caching for LLM initialization
+- **Token Management**: Configurable token limits for cost optimization  
+- **Chunk Strategy**: Optimized text splitting for accurate retrieval
+- **Model Selection**: Flexible model configuration for different use cases
+
+## Future Enhancements
+
+- Real-time news feed integration
+- Historical sentiment tracking
+- Multi-language article support
+- Advanced financial metrics extraction
+- Integration with financial data APIs
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+**Gabriel Hardy-Joseph** - [Portfolio](https://ghj95.github.io/portfolio/)
+
+Project Link: [https://github.com/yourusername/equitylens](https://github.com/yourusername/equitylens)
