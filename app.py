@@ -57,6 +57,23 @@ def init_resources():
 
     return llm, embeddings, vectorstore, qa_chain
 
+def clean_parsed_text(text):
+    import re
+    
+    # add spaces before numbers followed by letters
+    text = re.sub(r'(\d+)([a-zA-Z])', r'\1 \2', text)
+    
+    # add spaces around B,M,compared to
+    text = re.sub(r'billion', ' billion ', text)
+    text = re.sub(r'million', ' million ', text)
+    text = re.sub(r'comparedto', ' compared to ', text)
+    
+    # remove asterix and cleanup
+    text = text.replace('*', '')
+    text = re.sub(r'\s+', ' ', text)
+    
+    return text.strip()
+
 def extract_source_quotes(llm, sources, processed_docs, query, answer):
     source_quotes = {}
     
@@ -152,7 +169,7 @@ def fetch_article_document(url: str) -> Document:
     article = Article(url)
     article.download()
     article.parse()
-    content = article.text
+    content = clean_parsed_text(article.text) 
     if not content.strip():
         return None
     return Document(page_content=content, metadata={"source": url})
