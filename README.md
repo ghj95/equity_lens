@@ -15,7 +15,7 @@ EquityLens is an end-to-end LLM-powered news research tool that helps equity res
 
 ## Live Demo
 
-[Try EquityLens on Streamlit Cloud](your-streamlit-url-here)
+[Try EquityLens on Streamlit Cloud](https://equity-lens.streamlit.app)
 
 ## Tech Stack
 
